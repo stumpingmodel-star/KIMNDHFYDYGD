@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ symbol }} {{ interval }} Scalp Terminal</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+    <header class="top-bar">
+        <div class="brand">🪙 BLOOMBERG XAU SCALP TERMINAL</div>
+        <div class="ticker">
+            <span id="symbol">{{ symbol }}</span>
+            <span id="interval">{{ interval }}</span>
+            <span id="utc" class="dim">--:--:-- UTC</span>
+            <span id="latency" class="dim">Latency: -- ms</span>
+            <span id="conn-status" class="status disconnected">Disconnected</span>
+        </div>
+    </header>
+
+    <main class="dashboard">
+        <section class="chart-panel">
+            <div class="panel-header">📈 XAU/USDT 15m Candlestick Chart</div>
+            <div id="chart"></div>
+        </section>
+
+        <aside class="side-panels">
+            <div class="panel orderbook-panel">
+                <div class="panel-header">L2 Order Book <span id="ob-imbalance" class="badge">0.0%</span></div>
+                <table class="orderbook">
+                    <thead>
+                        <tr><th>Bid Size</th><th>Bid</th><th>Ask</th><th>Ask Size</th></tr>
+                    </thead>
+                    <tbody id="orderbook-body"></tbody>
+                </table>
+            </div>
+
+            <div class="panel tape-panel">
+                <div class="panel-header">Aggregated Trade Tape</div>
+                <table class="tape">
+                    <thead>
+                        <tr><th>Time</th><th>Side</th><th>Price</th><th>Size</th></tr>
+                    </thead>
+                    <tbody id="tape-body"></tbody>
+                </table>
+            </div>
+
+            <div class="panel metrics-panel">
+                <div class="panel-header">Scalp Radar: <span id="direction" class="badge neutral">NEUTRAL</span></div>
+                <div class="metric-grid" id="metrics">
+                    <div class="metric"><label>Last Price</label><span id="last-price">--</span></div>
+                    <div class="metric"><label>Micro Price</label><span id="micro-price">--</span></div>
+                    <div class="metric"><label>RSI (14)</label><span id="rsi">--</span></div>
+                    <div class="metric"><label>ATR (14)</label><span id="atr">--</span></div>
+                    <div class="metric"><label>VWAP</label><span id="vwap">--</span></div>
+                    <div class="metric"><label>EMA 9 / 21</label><span id="emas">-- / --</span></div>
+                    <div class="metric"><label>5s CVD</label><span id="cvd-5s">--</span></div>
+                    <div class="metric"><label>Total CVD</label><span id="cvd-total">--</span></div>
+                    <div class="metric"><label>Funding (8h)</label><span id="funding">--</span></div>
+                    <div class="metric"><label>Open Interest</label><span id="oi">--</span></div>
+                </div>
+            </div>
+
+            <div class="panel liq-panel">
+                <div class="panel-header">⚡ Liquidation Cascade Monitor</div>
+                <div class="metric-grid">
+                    <div class="metric"><label>State</label><span id="liq-state" class="badge idle">IDLE</span></div>
+                    <div class="metric"><label>Side</label><span id="liq-side">--</span></div>
+                    <div class="metric"><label>Long 10s</label><span id="liq-long">--</span></div>
+                    <div class="metric"><label>Short 10s</label><span id="liq-short">--</span></div>
+                    <div class="metric"><label>Velocity</label><span id="liq-velocity">--</span></div>
+                    <div class="metric"><label>Peak Velocity</label><span id="liq-peak">--</span></div>
+                    <div class="metric"><label>Wick Extreme</label><span id="liq-wick">--</span></div>
+                </div>
+            </div>
+
+        </aside>
+
+        <section class="panel trade-panel horizontal">
+            <div class="panel-header">⚡ 15m Scalp Signal</div>
+            <div class="signal-strip" id="signal-strip">
+                <div class="signal-cell">
+                    <label>Signal</label>
+                    <span id="scalp-signal" class="badge neutral">WAIT</span>
+                </div>
+                <div class="signal-cell">
+                    <label>Entry</label>
+                    <span id="scalp-entry">--</span>
+                </div>
+                <div class="signal-cell">
+                    <label>Ideal Entry</label>
+                    <span id="scalp-ideal">--</span>
+                </div>
+                <div class="signal-cell">
+                    <label>Stop Loss</label>
+                    <span id="scalp-sl" class="sl">--</span>
+                </div>
+                <div class="signal-cell">
+                    <label>Target</label>
+                    <span id="scalp-target" class="tp">--</span>
+                </div>
+                <div class="signal-cell">
+                    <label>R:R</label>
+                    <span id="scalp-rr">--</span>
+                </div>
+                <div class="signal-cell reason">
+                    <label>Reason</label>
+                    <span id="scalp-reason" class="dim">--</span>
+                </div>
+            </div>
+            <div class="trade-body">
+                <div class="trade-info">
+                    <span>Quick market entry + SL/TP bracket</span>
+                    <span class="dim" id="trade-mode">SIMULATED</span>
+                </div>
+                <div class="trade-buttons">
+                    <button id="btn-buy" class="buy">🟢 BUY LONG</button>
+                    <button id="btn-sell" class="sell">🔴 SELL SHORT</button>
+                </div>
+                <div id="trade-result" class="trade-result"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        100% real-time Binance USDⓈ-M futures feeds | No dummy data | Simulated by default unless API keys configured
+    </footer>
+
+    <script src="/static/main.js"></script>
+</body>
+</html>
