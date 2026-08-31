@@ -54,52 +54,49 @@ class ScalpSignalEngine:
         bullish_trend = ema_9 > ema_21
         bearish_trend = ema_9 < ema_21
 
-        # CVD micro-bias
-        cvd_bullish = market_state.recent_cvd_5s > 0.1
-        cvd_bearish = market_state.recent_cvd_5s < -0.1
-
         signal = "WAIT"
         side = None
         entry = price
         ideal_entry = price
         stop_loss = 0.0
         target = 0.0
-        reason = "No clear 15m setup"
+        reason = "No clear 15m trend"
 
-        sl_buffer = max(atr * 1.2, price * 0.0015)
-        tp_distance = max(atr * 2.0, price * 0.0025)
+        sl_dist = max(atr * 1.2, price * 0.0015)
+        tp_dist = max(atr * 2.0, price * 0.0025)
+        zone_tol = 0.5 * atr  # price within this of the zone = actionable
 
-        if bullish_trend and rsi > 40:
-            # Long setup: ideal entry is pullback to EMA9 or VWAP, whichever is lower and closer
-            ideal_pullback = max(min(ema_9, vwap), swing_low)
-            ideal_entry = ideal_pullback
-            entry = price
-            stop_loss = min(swing_low, ideal_entry - sl_buffer)
-            target = ideal_entry + tp_distance
+        if bullish_trend and rsi < 70:
+            # LONG: buy zone = supportive EMA9/VWAP level, floored by recent swing low
             side = "LONG"
-            signal = "LONG"
-            reason = "15m bullish trend, pullback buy"
-            if price > ema_9 and cvd_bullish:
-                reason += ", momentum confirmed"
-            elif price > ema_9:
+            zone = max(min(ema_9, vwap), swing_low)
+            in_zone = price <= zone + zone_tol
+            # Ideal entry is never above current price for a long
+            ideal_entry = price if in_zone else zone
+            stop_loss = min(swing_low, ideal_entry - sl_dist)
+            target = ideal_entry + tp_dist
+            if in_zone:
+                signal = "LONG"
+                reason = "Price at 15m buy zone (EMA9/VWAP), bullish trend"
+            else:
                 signal = "WAIT"
-                reason = "Price extended above EMA9, wait for pullback"
+                reason = "Bullish trend; wait for pullback to buy zone"
 
-        elif bearish_trend and rsi < 60:
-            # Short setup: ideal entry is rally to EMA9 or VWAP, whichever is higher and closer
-            ideal_pullback = min(max(ema_9, vwap), swing_high)
-            ideal_entry = ideal_pullback
-            entry = price
-            stop_loss = max(swing_high, ideal_entry + sl_buffer)
-            target = ideal_entry - tp_distance
+        elif bearish_trend and rsi > 30:
+            # SHORT: sell zone = resistive EMA9/VWAP level, capped by recent swing high
             side = "SHORT"
-            signal = "SHORT"
-            reason = "15m bearish trend, rally sell"
-            if price < ema_9 and cvd_bearish:
-                reason += ", momentum confirmed"
-            elif price < ema_9:
+            zone = min(max(ema_9, vwap), swing_high)
+            in_zone = price >= zone - zone_tol
+            # Ideal entry is never below current price for a short
+            ideal_entry = price if in_zone else zone
+            stop_loss = max(swing_high, ideal_entry + sl_dist)
+            target = ideal_entry - tp_dist
+            if in_zone:
+                signal = "SHORT"
+                reason = "Price at 15m sell zone (EMA9/VWAP), bearish trend"
+            else:
                 signal = "WAIT"
-                reason = "Price extended below EMA9, wait for rally"
+                reason = "Bearish trend; wait for rally to sell zone"
 
         # Risk / reward (computed from ideal entry, the planned trade)
         risk = abs(ideal_entry - stop_loss)
